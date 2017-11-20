@@ -1,36 +1,35 @@
 package gocv
 
 import (
-	"runtime"
 	"testing"
 )
 
-// func TestMOG2(t *testing.T) {
-// 	runtime.LockOSThread()
-// 	defer runtime.UnlockOSThread()
+func TestMOG2(t *testing.T) {
+	// runtime.LockOSThread()
+	// defer runtime.UnlockOSThread()
 
-// 	img := IMRead("images/face.jpg", IMReadColor)
-// 	if img.Empty() {
-// 		t.Error("Invalid Mat in MOG2 test")
-// 	}
-// 	defer img.Close()
+	img := IMRead("images/face.jpg", IMReadColor)
+	if img.Empty() {
+		t.Error("Invalid Mat in MOG2 test")
+	}
+	defer img.Close()
 
-// 	dst := NewMat()
-// 	defer dst.Close()
+	dst := NewMat()
+	defer dst.Close()
 
-// 	mog2 := NewBackgroundSubtractorMOG2()
-// 	defer mog2.Close()
+	mog2 := NewBackgroundSubtractorMOG2()
+	defer mog2.Close()
 
-// 	mog2.Apply(img, dst)
+	mog2.Apply(img, dst)
 
-// 	if dst.Empty() {
-// 		t.Error("Error in TestMOG2 test")
-// 	}
-// }
+	if dst.Empty() {
+		t.Error("Error in TestMOG2 test")
+	}
+}
 
 func TestKNN(t *testing.T) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	// runtime.LockOSThread()
+	// defer runtime.UnlockOSThread()
 
 	img := IMRead("images/face.jpg", IMReadColor)
 	if img.Empty() {
