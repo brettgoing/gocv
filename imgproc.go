@@ -12,6 +12,41 @@ import (
 	"unsafe"
 )
 
+// ApproxPolyDP
+func ApproxPolyDP(src []image.Point, epsilon float64, closed bool) []image.Point {
+	cPointArray := make([]C.struct_Point, len(src))
+	for i, r := range src {
+		cPoint := C.struct_Point{
+			x: C.int(r.X),
+			y: C.int(r.Y),
+		}
+		cPointArray[i] = cPoint
+	}
+
+	cContour := C.struct_Points{
+		points: (*C.Point)(&cPointArray[0]),
+		length: C.int(len(src)),
+	}
+
+	dstContour := C.ApproxPolyDP(cContour, C.double(epsilon), C.bool(closed))
+
+	pArray := dstContour.points
+	pLength := int(dstContour.length)
+	pHdr := reflect.SliceHeader{
+		Data: uintptr(unsafe.Pointer(pArray)),
+		Len:  pLength,
+		Cap:  pLength,
+	}
+	sPoints := *(*[]C.Point)(unsafe.Pointer(&pHdr))
+
+	points := make([]image.Point, pLength)
+	for j, pt := range sPoints {
+		points[j] = image.Pt(int(pt.x), int(pt.y))
+	}
+
+	return points
+}
+
 // CvtColor converts an image from one color space to another.
 // It converts the src Mat image to the dst Mat using the
 // code param containing the desired ColorConversionCode color space.
@@ -170,6 +205,26 @@ func ContourArea(contour []image.Point) float64 {
 	return float64(result)
 }
 
+// ArcLength
+func ArcLength(contour []image.Point, closed bool) float64 {
+	cPointArray := make([]C.struct_Point, len(contour))
+	for i, r := range contour {
+		cPoint := C.struct_Point{
+			x: C.int(r.X),
+			y: C.int(r.Y),
+		}
+		cPointArray[i] = cPoint
+	}
+
+	cContour := C.struct_Points{
+		points: (*C.Point)(&cPointArray[0]),
+		length: C.int(len(contour)),
+	}
+
+	result := C.ArcLength(cContour, C.bool(closed))
+	return float64(result)
+}
+
 // FindContours finds contours in a binary image.
 //
 // For further details, please see:
@@ -207,6 +262,26 @@ func FindContours(src Mat, mode RetrievalMode, method ContourApproximationMode) 
 	}
 
 	return contours
+}
+
+// IsContourConvex -
+func IsContourConvex(contour []image.Point) bool {
+	cPointArray := make([]C.struct_Point, len(contour))
+	for i, r := range contour {
+		cPoint := C.struct_Point{
+			x: C.int(r.X),
+			y: C.int(r.Y),
+		}
+		cPointArray[i] = cPoint
+	}
+
+	cContour := C.struct_Points{
+		points: (*C.Point)(&cPointArray[0]),
+		length: C.int(len(contour)),
+	}
+
+	result := C.IsContourConvex(cContour)
+	return bool(result)
 }
 
 // Moments calculates all of the moments up to the third order of a polygon
@@ -574,6 +649,39 @@ func Line(img Mat, pt1 image.Point, pt2 image.Point, c color.RGBA, thickness int
 	}
 
 	C.Line(img.p, sp1, sp2, sColor, C.int(thickness))
+}
+
+// DrawContour
+func DrawContour(img Mat, contour []image.Point, id int, c color.RGBA, thickness int) {
+	cPointArray := make([]C.struct_Point, len(contour))
+	for j, p := range contour {
+		cPoint := C.struct_Point{
+			x: C.int(p.X),
+			y: C.int(p.Y),
+		}
+		cPointArray[j] = cPoint
+	}
+	cContour := C.struct_Points{
+		points: (*C.Point)(&cPointArray[0]),
+		length: C.int(len(contour)),
+	}
+
+	sColor := C.struct_Scalar{
+		val1: C.double(c.B),
+		val2: C.double(c.G),
+		val3: C.double(c.R),
+		val4: C.double(c.A),
+	}
+
+	C.DrawContour(img.p, cContour, C.int(id), sColor, C.int(thickness))
+}
+
+// DrawContours - ugg... has to be implemented as such to avoid this cgo issue:
+// https://github.com/golang/go/issues/14210
+func DrawContours(img Mat, contours [][]image.Point, id int, c color.RGBA, thickness int) {
+	for _, con := range contours {
+		DrawContour(img, con, id, c, thickness)
+	}
 }
 
 // Rectangle draws a simple, thick, or filled up-right rectangle.

@@ -1,5 +1,23 @@
 #include "imgproc.h"
 
+Contour ApproxPolyDP(Contour src, double epsilon, bool closed) {
+    std::vector<cv::Point> inPts;
+    std::vector<cv::Point> outPts;
+    for (size_t i = 0; i < src.length; i++) {
+        inPts.push_back(cv::Point(src.points[i].x, src.points[i].y));
+    }
+    cv::approxPolyDP(inPts, outPts, epsilon, closed);
+
+    Point *pts = new Point[outPts.size()];
+    for (size_t i = 0; i < outPts.size(); i++) {
+            Point pt = {outPts[i].x, outPts[i].y};
+            pts[i] = pt;
+    }
+    Contour dst = Contour{pts, (int)outPts.size()};
+
+    return dst;
+}
+
 void CvtColor(Mat src, Mat dst, int code) {
     cv::cvtColor(*src, *dst, code);
 }
@@ -47,6 +65,14 @@ double ContourArea(Contour con) {
     return cv::contourArea(pts);
 }
 
+double ArcLength(Contour con, bool closed) {
+    std::vector<cv::Point> pts;
+    for (size_t i = 0; i < con.length; i++) {
+        pts.push_back(cv::Point(con.points[i].x, con.points[i].y));
+    }
+    return cv::arcLength(pts, closed);
+}
+
 struct Contours FindContours(Mat src, int mode, int method) {
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(*src, contours, mode, method);
@@ -63,6 +89,14 @@ struct Contours FindContours(Mat src, int mode, int method) {
 
     Contours cons = {points, (int)contours.size()};
     return cons;
+}
+
+bool IsContourConvex(Contour con) {
+    std::vector<cv::Point> pts;
+    for (size_t i = 0; i < con.length; i++) {
+        pts.push_back(cv::Point(con.points[i].x, con.points[i].y));
+    }
+    return cv::isContourConvex(pts);
 }
 
 Mat GetStructuringElement(int shape, Size ksize) {
@@ -144,6 +178,32 @@ void Line(Mat img, Point pt1, Point pt2, Scalar color, int thickness) {
     cv::line(*img, p1, p2, c, thickness);
 }
 
+void DrawContour(Mat img, Contour con, int id, Scalar color, int thickness) {
+    std::vector<std::vector<cv::Point> > contours;
+    std::vector<cv::Point> pts;
+    for (size_t i = 0; i < con.length; i++) {
+        pts.push_back(cv::Point(con.points[i].x, con.points[i].y));
+    }
+    contours.push_back(pts);
+
+    cv::Scalar c = cv::Scalar(color.val1, color.val2, color.val3, color.val4);
+    cv::drawContours(*img, contours, id, c, thickness);
+}
+
+void DrawContours(Mat img, Contours con, int id, Scalar color, int thickness) {
+    std::vector<std::vector<cv::Point> > contours;
+    for (size_t i = 0; i < con.length; i++) {
+        std::vector<cv::Point> pts;
+        for (size_t j = 0; j < con.contours[i].length; j++) {
+            pts.push_back(cv::Point(con.contours[i].points[j].x, con.contours[i].points[j].y));
+        }
+        contours.push_back(pts);
+    }
+
+    cv::Scalar c = cv::Scalar(color.val1, color.val2, color.val3, color.val4);
+    cv::drawContours(*img, contours, id, c, thickness);
+}
+
 void Rectangle(Mat img, Rect r, Scalar color, int thickness) {
     cv::Scalar c = cv::Scalar(color.val1, color.val2, color.val3, color.val4);
     cv::rectangle(*img, cv::Point(r.x, r.y), cv::Point(r.x+r.width, r.y+r.height),
@@ -164,6 +224,6 @@ void PutText(Mat img, const char* text, Point org, int fontFace, double fontScal
 }
 
 void Resize(Mat src, Mat dst, Size dsize, double fx, double fy, int interp) {
-  cv::Size sz(dsize.width, dsize.height);
+  cv::Size sz(dsize.height, dsize.width);
   cv::resize(*src, *dst, sz, fx, fy, interp);
 }

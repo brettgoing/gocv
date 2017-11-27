@@ -10,6 +10,7 @@ extern "C" {
 
 #include "core.h"
 
+Contour ApproxPolyDP(Contour src, double epsilon, bool closed);
 void CvtColor(Mat src, Mat dst, int code);
 void BilateralFilter(Mat src, Mat dst, int d, double sc, double ss);
 void Blur(Mat src, Mat dst, Size ps);
@@ -18,7 +19,9 @@ void Erode(Mat src, Mat dst, Mat kernel);
 struct Moment Moments(Mat src, bool binaryImage);
 struct Rect BoundingRect(Contour con);
 double ContourArea(Contour con);
+double ArcLength(Contour con, bool closed);
 struct Contours FindContours(Mat src, int mode, int method);
+bool IsContourConvex(Contour con);
 void GaussianBlur(Mat src, Mat dst, Size ps, double sX, double sY, int bt);
 void Laplacian(Mat src, Mat dst, int dDepth, int kSize, double scale, double delta, int borderType);
 void Scharr(Mat src, Mat dst, int dDepth, int dx, int dy, double scale, double delta, int borderType);
@@ -37,6 +40,8 @@ void Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ);
 void ArrowedLine(Mat img, Point pt1, Point pt2, Scalar color, int thickness);
 void Circle(Mat img, Point center, int radius, Scalar color, int thickness);
 void Line(Mat img, Point pt1, Point pt2, Scalar color, int thickness);
+void DrawContour(Mat img, Contour con, int id, Scalar color, int thickness);
+void DrawContours(Mat img, Contours con, int id, Scalar color, int thickness);
 void Rectangle(Mat img, Rect rect, Scalar color, int thickness);
 struct Size GetTextSize(const char* text, int fontFace, double fontScale, int thickness);
 void PutText(Mat img, const char* text, Point org, int fontFace, double fontScale,
